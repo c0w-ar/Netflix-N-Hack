@@ -164,13 +164,6 @@ mitmproxy -s proxy.py
 
 ```
 
-Please make sure you change the settings in both "inject.js" and "inject_elfldr_automated" to point to your local Proxy.
-
-```js
-const ip_script = "10.0.0.2"; // ip address of your computer running mitmproxy, MITM Proxy is handling it --> Needs to be updated
-const ip_script_port = 8080; //port that mitmproxy is on
-```
-
 Current config in Proxy script will trigger the "ELF Loader Automated Injection" with no logging.
 If you wish to use remote logging, please initiate your local WebSocket Server.
 
