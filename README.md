@@ -4,7 +4,10 @@ Inject custom JavaScript into the Netflix PS5 error screen by intercepting Netfl
 
 PS5 firmware version: 4.03-12.XX
 
-Lowest working version: https://prosperopatches.com/PPSA01615?v=05.000.000
+App versions:
+- NA 5.000: https://prosperopatches.com/PPSA01614
+- EU 6.000: https://prosperopatches.com/PPSA01615
+- JP 6.000 (untested): https://prosperopatches.com/PPSA01616
 
 > This project uses a local MITM proxy to inject and execute `inject.js` on the Netflix error page
 
@@ -161,7 +164,15 @@ mitmproxy -s proxy.py
 
 ```
 
-Current script will trigger after the WebSocket for remote logging is initiated.
+Please make sure you change the settings in both "inject.js" and "inject_elfldr_automated" to point to your local Proxy.
+
+```js
+const ip_script = "10.0.0.2"; // ip address of your computer running mitmproxy, MITM Proxy is handling it --> Needs to be updated
+const ip_script_port = 8080; //port that mitmproxy is on
+```
+
+Current config in Proxy script will trigger the "ELF Loader Automated Injection" with no logging.
+If you wish to use remote logging, please initiate your local WebSocket Server.
 
 ```bash
 # install websockets
@@ -173,6 +184,13 @@ openssl req -x509 -newkey rsa:4096 -nodes -keyout key.pem -out cert.pem -days 36
 # run WebSocket server
 python ws.py
 
+```
+
+And change both "inject.js" and "inject_elfldr_automated" to:
+
+```js
+ws.init(ip_script, 1337, () => { logger.log("Websocket initiated successfully"); main();});// uncomment this to enable WebSocket logging
+//main();
 ```
 
 ### Network / Proxy Setup

